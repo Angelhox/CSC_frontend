@@ -1,0 +1,97 @@
+@import "../../scss/commons/commons.scss";
+.Auth {
+  height: 100vh;
+  width: 100%;
+  background: linear-gradient(
+    135deg,
+    #31476e,
+    #31476e,
+    #4071b3,
+    #28a8e1,
+    // #8fd1e0,
+    // #ffb3b3
+  );
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .ui.column {
+    padding: 0;
+    margin: 0;
+    .row {
+      flex-wrap: wrap-reverse;
+      .column {
+        padding: 0;
+        margin: 0;
+      }
+      .images-space {
+        .image {
+          padding: 0;
+          margin: 0;
+        }
+        div {
+          margin: 1em 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-wrap: wrap;
+          h2 {
+            color: $font-light !important;
+            padding: 0 5px;
+          }
+          &:last-of-type {
+            flex-direction: row-reverse;
+          }
+        }
+      }
+      .slogan-space {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .content-space {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+  &.solutions {
+    padding: 0;
+    margin: 0;
+  }
+  &.content {
+    width: 100%;
+    border-radius: 10px;
+    background-color: $background-transparent;
+    padding: 50px 70px;
+    &-logo {
+      width: 500px;
+      margin: 0 auto;
+    }
+  }
+}
+/* Media query para pantallas pequeñas (hasta 600px de ancho) */
+@media screen and (max-width: 600px) {
+  .Auth {
+    height: max-content;
+    width: 100%;
+  }
+}
+/* Media query para tabletas (entre 601px y 1024px de ancho) */
+@media screen and (min-width: 601px) and (max-width: 765px) {
+  .Auth {
+    height: max-content;
+    width: 100%;
+  }
+}
+/* Media query para pantallas de escritorio (más de 1024px de ancho) */
+@media screen and (min-width: 1025px) {
+  /* Estilos específicos para pantallas de escritorio */
+}
+/* Media query para pantallas grandes (más de 1920px de ancho) */
+@media screen and (min-width: 1921px) {
+  /* Estilos específicos para pantallas grandes */
+}

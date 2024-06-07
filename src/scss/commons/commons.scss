@@ -1,0 +1,12 @@
+@import "./colors.scss";
+@import "../semantic/form.scss";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  border: none;
+}
+@mixin transition($property) {
+  transition: $property 0.2s ease-in-out;
+}

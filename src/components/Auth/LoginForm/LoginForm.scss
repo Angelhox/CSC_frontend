@@ -1,0 +1,68 @@
+@import "../../../scss/commons/commons.scss";
+.LoginForm {
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  > h1 {
+    color: $font-light;
+    text-align: center;
+    font-size: 35px;
+    padding-top: 20px;
+  }
+  .ui.form {
+    width: 90%;
+
+    .field {
+      .input {
+        margin-bottom: 5px;
+        input {
+          border-radius: 0.4rem;
+          font-size: 16px;
+        }
+        i {
+          font-size: 19px;
+        }
+      }
+      &.error {
+        .input {
+          input {
+            box-shadow: 0px 0px 0px 1px $danger;
+          }
+        }
+      }
+      .ui.button {
+        text-transform: uppercase;
+        margin-top: 10px;
+        padding: 17px 0;
+        font-size: 14px;
+        letter-spacing: 3px;
+        &:hover,
+        &:active,
+        &:focus {
+          background-color: $primary-color-hover;
+          color: $font-light;
+          transition: 0.2s ease-in-out;
+          opacity: 0.85;
+        }
+      }
+    }
+  }
+  .options {
+    margin-top: 50px;
+    color: $font-light;
+    text-align: center;
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: bold;
+    p {
+      &:first-of-type {
+        margin-bottom: 40px;
+        cursor: pointer;
+        color: $font-light;
+      }
+    }
+  }
+}
