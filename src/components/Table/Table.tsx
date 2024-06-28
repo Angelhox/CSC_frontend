@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   flexRender,
@@ -36,6 +37,7 @@ export function Table({
   error,
 }: Props) {
   const [data, setData] = useState(defaultData);
+  console.log("data in table: ", data);
   const rerender = useReducer(() => ({}), {})[1];
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filtering, setFiltering] = useState("");
@@ -90,7 +92,7 @@ export function Table({
         <table className="">
           <thead className="thead-light">
             <tr>
-              <th colSpan={defaultData.length}>
+              <th colSpan={columns.length}>
                 <div>
                   <TfiSearch />
                   <input
@@ -167,7 +169,6 @@ export function Table({
         <button onClick={() => table.setPageIndex(table.getPageCount() - 1)}>
           <TfiControlSkipForward />
         </button>
-        <button onClick={() => rerender()}>Force Rerender</button>
       </div>
     </div>
   );

@@ -24,14 +24,18 @@ export const socioSchema = z.object({
     .refine((dob) => new Date(dob).toString() !== "Invalid Date", {
       message: "Debes ingresar una fecha válida",
     }),
-  telefonoMovil: z
-    .string()
-    .min(10, { message: "Debes ingresar un mínimo de 10 digitos" })
-    .max(10, { message: "Debes ingresar un máximo de 10 digitos" }),
+  telefonoMovil: z.optional(
+    z.string().max(10, { message: "Debes ingresar un máximo de 10 digitos" })
+  ),
   telefonoFijo: z.optional(
     z.string().max(10, { message: "Debes ingresar un máximo de 10 digitos" })
   ),
-  correo: z.optional(z.string()),
+  correo: z.preprocess((val) => {
+    if (val === "") {
+      return "jaapsemail@gmail.com";
+    }
+    return val;
+  }, z.string().email("Ingresa un correo válido")),
   provincia: z
     .string()
     .min(3, { message: "Debes ingresar un mínimo de 3 caracteres" })
@@ -53,6 +57,9 @@ export const socioSchema = z.object({
   ),
   calleSecundaria: z.optional(
     z.string().max(45, { message: "Debes ingresar un máximo de 45 caracteres" })
+  ),
+  numeroCasa: z.optional(
+    z.string().max(8, { message: "Ingresa un máximo de 8 caracteres" })
   ),
   referencia: z
     .string()

@@ -118,6 +118,8 @@ td img {
             input {
               margin: 0.5rem 1rem;
               width: 50%;
+              max-width: 400px;
+              min-width: 250px !important;
               height: 1.8rem;
               border-radius: 0.4rem;
               padding: 10px;
@@ -138,6 +140,11 @@ td img {
       tr {
         &:nth-child(even) {
           background-color: #0000000b;
+          td {
+            button {
+              background-color: $background-light;
+            }
+          }
         }
         &:hover {
           background-color: #fff6;
@@ -167,6 +174,22 @@ td {
   border-collapse: collapse;
   padding: 1rem 1rem;
   text-align: left;
+  button {
+    width: 100%;
+    cursor: pointer;
+    border-radius: 0.4rem;
+    transition: 0.2s ease-in-out;
+    svg {
+      margin: 0;
+      padding: 0;
+      color: $primary-color-hover;
+      font-size: 1.5rem;
+    }
+    &:hover {
+      border: 1.5px solid $secondary-border-color;
+      transform: scale(1.2);
+    }
+  }
 }
 // ?
 @media (max-width: 100px) {

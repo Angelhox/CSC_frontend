@@ -20,6 +20,7 @@ import {
 import { UseCargosContext } from "../../context/cargos.context";
 import { UseRolesContext } from "../../context/roles.context";
 import { useState } from "react";
+import { toast } from "sonner";
 type Inputs = IEmpleadoUsuario;
 export function Form() {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,12 +40,20 @@ export function Form() {
     isSubmitting,
   } = useSubmitForm<IEmpleadoUsuario>({
     async onSubmit(values) {
-      await createUsuario(values);
-      alert("Usuario create successfully");
-      reloadRecords();
+      await createUsuario(values)
+        .then(() => {
+          toast.success("Creaste un nuevo administrador", {
+            className: "notify-success",
+          });
+          reloadRecords();
+        })
+        .catch((error) => {
+          toast.error(error.message, { className: "notify-error" });
+        });
     },
   });
   const onSubmit = (data: Inputs) => {
+    console.log(data);
     handleSubmitWithSubmit(data);
   };
   // Fake data
@@ -250,6 +259,7 @@ export function Form() {
           )}
         </div>
       </div>
+      {error && <p className="error-request">{error}</p>}
       <div className="buttons">
         <button type="submit">
           <TfiSaveAlt />

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface UseFormProps<T> {
   onSubmit: (values: T) => Promise<void>;
@@ -10,8 +11,9 @@ const useSubmitForm = <T>({ onSubmit }: UseFormProps<T>) => {
   const handleSubmit = async (values: T) => {
     setIsSubmitting(true);
     setError(null);
+    console.log(values);
     try {
-      await onSubmit(values);
+      onSubmit(values);
     } catch (error) {
       setError((error as Error).message);
     } finally {

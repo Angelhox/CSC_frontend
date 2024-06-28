@@ -34,18 +34,19 @@ export const empleadoSchema = z.object({
 });
 // Tabla usuarios !!
 export const usuarioSchema = z
+// Cambiar validacion de usuario a email !!
   .object({
     usuario: z
       .string()
-      .min(20, { message: "Ingresa 20 caracteres como mínimo" })
-      .max(45, { message: "Ingresa 45 caracteres como máximo" }),
+      .min(10, { message: "Ingresa 10 caracteres como mínimo" })
+      .max(255, { message: "Ingresa 255 caracteres como máximo" }),
     clave: z
       .string()
-      .min(20, { message: "Ingresa 20 caracteres como mínimo" })
+      .min(12, { message: "Ingresa 12 caracteres como mínimo" })
       .max(45, { message: "Ingresa 45 caracteres como máximo" }),
     confirmClave: z
       .string()
-      .min(20, { message: "Ingresa 20 caracteres como mínimo" })
+      .min(12, { message: "Ingresa 10 caracteres como mínimo" })
       .max(45, { message: "Ingresa 45 caracteres como máximo" }),
     fechaModificacion: z
       .string()

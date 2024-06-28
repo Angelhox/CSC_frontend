@@ -34,7 +34,7 @@ export async function createUsuario(
 ): Promise<IEmpleadoUsuario> {
   try {
     const response = await axiosInstance.post<IEmpleadoUsuario>(
-      "/empleado",
+      "/empleado.usuario",
       usuario
     );
     return response.data;

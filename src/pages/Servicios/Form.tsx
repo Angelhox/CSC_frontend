@@ -1,17 +1,25 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useForm } from "react-hook-form";
 import "../../scss/commons/forms.scss";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TfiSaveAlt } from "react-icons/tfi";
 import { MdOutlineCancelPresentation } from "react-icons/md";
-import { BiMessageSquareAdd } from "react-icons/bi";
 import { servicioSchema } from "../../validations/servicio-schema";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UseServiciosContext } from "../../context/servicios.context";
-import { useSubmit } from "react-router-dom";
 import useSubmitForm from "../../api/commons/useSubmitForm";
 import { IServicios } from "../../Interfaces/Servicios/servicios.interface";
-import { createServicio } from "../../api/Servicios/servicio.service";
+import {
+  createServicio,
+  deleteServicio,
+  updateServicio,
+} from "../../api/Servicios/servicio.service";
+import { toast } from "sonner";
+import { ConfirmDialog } from "../../components/Shared/Dialogs/ConfirmDialog/ConfirmDialog";
+import { BiMessageSquareAdd } from "react-icons/bi";
+import { fechaActual } from "../../functions/commons/fechas";
+
 type Inputs = {
   nombre: string;
   descripcion: string;
@@ -25,32 +33,166 @@ type Inputs = {
   valorPagos: number;
   // serviciosCompartidos:string;
 };
-export function Form() {
+interface IFormProps {
+  data?: IServicios | null;
+  returnForm?: () => void;
+}
+export function Form({ data, returnForm }: IFormProps) {
   const { reloadRecords } = UseServiciosContext();
   const [aplazableState, setAplazableState] = useState(false);
+  const [fijoState, setFijoState] = useState<boolean>(true);
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
+    setValue,
+    getValues,
+    reset,
+    watch,
   } = useForm<Inputs>({ resolver: zodResolver(servicioSchema) });
+  useEffect(() => {
+    if (data !== null) {
+      console.log("Data isnt null: ", data);
+      if (data?.tipo === "Servicio fijo") {
+        setFijoState(true);
+      } else {
+        setFijoState(false);
+      }
+      Object.keys(new Object(data)).forEach((key) => {
+        setValue(key as keyof Inputs, (data as any)[key]);
+      });
+    } else {
+      console.log("Resetting values");
+      reset(undefined, { keepDefaultValues: false });
+      setValue("fechaCreacion", fechaActual());
+    }
+  }, [data, reset, setValue]);
+
   console.log(errors);
-  function handleSwitchChange() {
-    setAplazableState(!aplazableState);
-  }
+
   const {
     handleSubmit: handleSubmitWithSubmit,
     error,
     isSubmitting,
   } = useSubmitForm<IServicios>({
     onSubmit: async (values) => {
-      await createServicio(values);
-      alert("Servicio created successfully");
-      reloadRecords();
+      const action = data ? updateServicio : createServicio;
+      await action(values, data?.id || "")
+        .then(() => {
+          const message = data ? "Actualizaste" : "Creaste";
+          toast.success(`¡${message} un servicio con éxito!`, {
+            className: "notify-success",
+          });
+          reloadRecords();
+          returnForm
+            ? returnForm()
+            : reset(undefined, { keepDefaultValues: false });
+          setValue("fechaCreacion", fechaActual());
+        })
+        .catch((error) => {
+          toast.error(error.message, {
+            className: "notify-error",
+          });
+        });
     },
   });
+  const {
+    handleSubmit: handleDelete,
+    error: deleteError,
+    isSubmitting: isDeleting,
+  } = useSubmitForm<void>({
+    onSubmit: async () => {
+      if (data) {
+        await deleteServicio(data?.id || "")
+          .then(() => {
+            toast.success("¡Eliminaste un servicio con éxito!", {
+              className: "notify-success",
+            });
+            reloadRecords();
+            returnForm
+              ? returnForm()
+              : reset(undefined, { keepDefaultValues: false });
+            setValue("fechaCreacion", fechaActual());
+          })
+          .catch((error) => {
+            toast.error(error.message, { className: "notify-error" });
+          });
+      }
+    },
+  });
+  const valoresDistintosOptions = [
+    { value: "Si", label: "Valores Distintos" },
+    { value: "No", label: "Valores Generales" },
+  ];
+  const aplazableOptions = [
+    { value: "No", label: "No aplazable" },
+    { value: "Si", label: "Aplazable" },
+  ];
+
+  const individualOptions = [
+    { value: "Si", label: "Por Socio" },
+    { value: "No", label: "Por Contrato" },
+  ];
   const onSubmit = (data: Inputs) => {
     handleSubmitWithSubmit(data);
+  };
+  // function handleSwitchChange() {
+  //   setAplazableState(!aplazableState);
+  // }
+  const handleChangeTipo = (state: boolean) => {
+    if (state) {
+      setAplazableState(!state);
+      setValue("aplazableSn", "No");
+    }
+    setFijoState(state);
+  };
+  const selectAplazable = () => {
+    if (getValues("aplazableSn") === "Si") {
+      setAplazableState(true);
+    } else {
+      setAplazableState(false);
+    }
+  };
+  const handleNumeroPagos = () => {
+    switch (fijoState) {
+      case true:
+        setValue("numeroPagos", 1);
+        changeNumeroPagosValor();
+        console.log("Case 1");
+        return true;
+      case false:
+        console.log("Case 2");
+        if (!aplazableState) {
+          setValue("numeroPagos", 1);
+          changeNumeroPagosValor();
+          return true;
+        }
+        return false;
+      default:
+        console.log("Case 3");
+        return false;
+    }
+  };
+  const handleCancel = () => {
+    reset(undefined, { keepDefaultValues: false });
+    setValue("fechaCreacion", fechaActual());
+  };
+  const handleDeleteClick = () => {
+    const confirmProps = {
+      title: "¿Quieres eliminar este registro?",
+      text: "No podras revertir esta acción",
+      onConfirm: handleDelete,
+      beforeConfirmTitle: "¡Eliminado!",
+      beforeConfirmText: "El registro se ha eliminado",
+    };
+    ConfirmDialog(confirmProps);
+  };
+  const changeNumeroPagosValor = () => {
+    const numeroPagos: number = getValues("numeroPagos");
+    const valorTotal: number = getValues("valor");
+    console.log("Numero de pagos: ", numeroPagos, valorTotal);
+    const valorPagos = valorTotal / numeroPagos;
+    setValue("valorPagos", valorPagos);
   };
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="Formulario">
@@ -74,6 +216,7 @@ export function Form() {
             type="radio"
             id="Fijo"
             value={"Servicio fijo"}
+            onClick={() => handleChangeTipo(true)}
             {...register("tipo")}
           />
           <label htmlFor="Fijo">Servicio fijo</label>
@@ -81,6 +224,7 @@ export function Form() {
             type="radio"
             id="Cuota"
             value={"Cuota"}
+            onClick={() => handleChangeTipo(false)}
             {...register("tipo")}
           />
           <label htmlFor="Cuota">Cuota</label>
@@ -108,19 +252,6 @@ export function Form() {
           <label htmlFor="descripcion">Descripción</label>
           {errors.descripcion?.message && <p>{errors.descripcion?.message}</p>}
         </div>
-
-        {/* <div className="input-group type-google">
-          <input
-            type="text"
-            placeholder=""
-            id="tipo"
-            required
-            {...register("tipo")}
-          />
-          <label htmlFor="tipo">Tipo</label>
-          {errors.tipo?.message && <p>{errors.tipo.message}</p>}
-        </div> */}
-
         <div className="input-group type-google">
           <input
             type="number"
@@ -128,15 +259,11 @@ export function Form() {
             placeholder=""
             id="valor"
             required
-            {...register("valor")}
+            {...register("valor", { onChange: changeNumeroPagosValor })}
           />
           <label htmlFor="valor">Valor</label>
           {errors.valor?.message && <p>{errors.valor.message}</p>}
         </div>
-        {/* <label htmlFor="switch" >
-          <input type="checkbox" id="switch" />
-          <div className="slider"></div>
-        </label> */}
         <div className="input-group type-google">
           <label htmlFor="valoresDistintosSn" className="select">
             Edición
@@ -146,59 +273,51 @@ export function Form() {
             required
             {...register("valoresDistintosSn")}
           >
-            <option value="Si">Valores Distintos</option>
-            <option value="No">Valores Generales</option>
+            {valoresDistintosOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
           {errors.valoresDistintosSn?.message && (
             <p>{errors.valoresDistintosSn.message}</p>
           )}
         </div>
-        {/* <div className="input-group type-google">
-          <input
-            type="text"
-            placeholder=""
-            id="valoresDistintosSn"
-            required
-            {...register("valoresDistintosSn")}
-          />
-          <label htmlFor="valoresDistintosSn">Valores distintos</label>
-          {errors.valoresDistintosSn?.message && (
-            <p>{errors.valoresDistintosSn.message}</p>
-          )}
-        </div> */}
-        {/* <div className="input-group type-google">
-          <input
-            type="text"
-            placeholder=""
-            id="individualSn"
-            required
-            {...register("individualSn")}
-          />
-          <label htmlFor="individualSn">Aplicación</label>
-          {errors.individualSn?.message && <p>{errors.individualSn.message}</p>}
-        </div> */}
         <div className="input-group  type-google ">
           <label htmlFor="individualSn" className="select">
             Aplicación
           </label>
           <select id="individualSn" required {...register("individualSn")}>
-            <option value="Si">Por Socio</option>
-            <option value="No"> Por Contrato</option>
+            {individualOptions.map((option) => (
+              <option value={option.value} key={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
           {errors.individualSn?.message && <p>{errors.individualSn.message}</p>}
         </div>
-        {/* <div className="input-group type-google">
-          <input
-            type="text"
-            placeholder=""
+        <div className="input-group  type-google ">
+          <label htmlFor="aplazableSn" className="select">
+            Plazo
+          </label>
+          <select
             id="aplazableSn"
             required
-            {...register("aplazableSn")}
-          />
-          <label htmlFor="aplazableSn">Aplazable</label>
+            {...register("aplazableSn", { onChange: selectAplazable })}
+          >
+            {aplazableOptions.map((option) => (
+              <option
+                value={option.value}
+                key={option.value}
+                disabled={option.value === "Si" && fijoState ? true : false}
+              >
+                {option.label}
+              </option>
+            ))}
+          </select>
           {errors.aplazableSn?.message && <p>{errors.aplazableSn.message}</p>}
-        </div> */}
-        <div className="label-switch">
+        </div>
+        {/* <div className="label-switch">
           <label htmlFor="aplazableSn" className="switch">
             {aplazableState ? "Aplazable" : "No aplazable"}
           </label>
@@ -210,11 +329,13 @@ export function Form() {
               {...register("aplazableSn")}
               checked={aplazableState}
               onClick={handleSwitchChange}
+              disabled={fijoState}
+
             />
             <div className="slider"></div>
           </label>
           {errors.aplazableSn?.message && <p>{errors.aplazableSn.message}</p>}
-        </div>
+        </div> */}
 
         <div className="divider">
           <p>Adicionales</p>
@@ -225,8 +346,11 @@ export function Form() {
             type="number"
             placeholder=""
             id="numeroPagos"
+            readOnly={handleNumeroPagos()}
             required
-            {...register("numeroPagos")}
+            {...register("numeroPagos", {
+              onChange: changeNumeroPagosValor,
+            })}
           />
           <label htmlFor="numeroPagos">Número de pagos</label>
           {errors.numeroPagos?.message && <p>{errors.numeroPagos.message}</p>}
@@ -238,6 +362,7 @@ export function Form() {
             placeholder=""
             id="valorPagos"
             required
+            readOnly={true}
             {...register("valorPagos")}
           />
           <label htmlFor="valorPagos">Valor de los pagos</label>
@@ -245,12 +370,26 @@ export function Form() {
         </div>
       </div>
       <div className="buttons">
-        <button type="submit">
+        <button type="submit" disabled={isDeleting || isSubmitting}>
           {" "}
           <TfiSaveAlt />
-          Guardar
+          {data ? "Actualizar" : "Guardar"}
         </button>
-        <button className="cancel">
+        {data && (
+          <button
+            type="button"
+            disabled={isDeleting || isSubmitting}
+            onClick={handleDeleteClick}
+          >
+            Eliminar
+          </button>
+        )}
+        <button
+          className="cancel"
+          type="button"
+          onClick={returnForm || handleCancel}
+          disabled={isDeleting || isSubmitting}
+        >
           <MdOutlineCancelPresentation />
           Cancelar
         </button>

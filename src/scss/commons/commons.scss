@@ -10,3 +10,32 @@
 @mixin transition($property) {
   transition: $property 0.2s ease-in-out;
 }
+.notify-success {
+  padding: 0.2rem;
+  color: #fff;
+  font-size: 15px;
+
+  background-color: #27ae60;
+
+  svg {
+    color: white;
+  }
+  button {
+    background-color: #27ae60;
+    color: white;
+  }
+}
+.notify-error {
+  padding: 0.2rem;
+  color: #fff;
+  font-size: 15px;
+  background-color: $primary-color;
+
+  svg {
+    color: white;
+  }
+  button {
+    color: white;
+    background-color: $primary-color;
+  }
+}

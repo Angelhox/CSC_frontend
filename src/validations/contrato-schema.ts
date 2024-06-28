@@ -1,7 +1,13 @@
 import { z } from "zod";
 const estadoContrato = ["Activo", "Innactivo"] as const;
 const estadoMedidor = ["Si", "No"] as const;
-export const contratoSchema = z.object({
+export const contratoSchema =  z.object({
+  socioId: z.preprocess((val) => {
+    if (typeof val === "string") {
+      return parseFloat(val);
+    }
+    return val;
+  }, z.number({ invalid_type_error: "Ingresa un número válido" }).positive({ message: "Ingresa un número válido" }).min(1, { message: "Ingresa un número válido" }).int("Ingresa un número entero")),
   codigo: z
     .string()
     .min(6, { message: "Debes ingresar mínimo 6 caracteres" })
@@ -30,7 +36,7 @@ export const contratoSchema = z.object({
   numeroCasa: z.optional(
     z
       .string()
-      
+
       .max(10, { message: "Ingresa un máximo de 10 caracteres" })
   ),
   referencia: z

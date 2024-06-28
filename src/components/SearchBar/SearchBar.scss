@@ -1,0 +1,32 @@
+.search-bar {
+  .basic-single {
+    width: 100%;
+    .select__control {
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .select__menu {
+      z-index: 99999;
+      padding: 0 !important;
+    }
+    .container-options {
+      width: 40rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .select__value-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .select__input-container {
+      height: 22px;
+      font-size: 15px;
+      input {
+        font-size: 15px;
+      }
+    }
+  }
+
+  width: 100% !important;
+}

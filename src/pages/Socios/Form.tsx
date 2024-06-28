@@ -1,15 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useForm } from "react-hook-form";
 import "../../scss/commons/forms.scss";
+import "../../scss/commons/dialogs.scss";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { socioSchema } from "../../validations/socioSchema";
 import { TfiSaveAlt } from "react-icons/tfi";
 import { MdOutlineCancelPresentation } from "react-icons/md";
 import { ISocio } from "../../Interfaces/Socios/socios.interface";
-import { createSocio } from "../../api/Socios/socio.service";
+import {
+  createSocio,
+  deleteSocio,
+  updateSocio,
+} from "../../api/Socios/socio.service";
 import useSubmitForm from "../../api/commons/useSubmitForm";
 import { UseSocios } from "../../context/socios.context";
-
+import { toast } from "sonner";
+import { useEffect } from "react";
+import Swal from "sweetalert2";
+import { ConfirmDialog } from "../../components/Shared/Dialogs/ConfirmDialog/ConfirmDialog";
 type Inputs = {
   primerNombre: string;
   segundoNombre?: string;
@@ -30,28 +39,99 @@ type Inputs = {
   referencia: string;
 };
 
-export function Form() {
+interface IFormProps {
+  data?: ISocio | null;
+  returnForm?: () => void;
+}
+
+export function Form({ data, returnForm }: IFormProps) {
   const { reloadRecords } = UseSocios();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>({ resolver: zodResolver(socioSchema) });
-  console.log(errors);
+    setValue,
+    reset,
+  } = useForm<Inputs>({
+    resolver: zodResolver(socioSchema),
+  });
+
+  useEffect(() => {
+    if (data !== null) {
+      console.log("Data isnt null");
+      Object.keys(new Object(data)).forEach((key) => {
+        setValue(key as keyof Inputs, (data as any)[key]);
+      });
+    } else {
+      console.log("Resetting values");
+      reset(undefined, { keepDefaultValues: false });
+    }
+  }, [data, reset, setValue]);
+
   const {
     handleSubmit: handleSubmitWithSubmit,
     error,
     isSubmitting,
   } = useSubmitForm<ISocio>({
     onSubmit: async (values) => {
-      await createSocio(values);
-      // alert("User created successfully");
-      console.log("User created successfully");
-      await reloadRecords();
+      const action = data ? updateSocio : createSocio;
+      await action(values, data?.id || "")
+        .then(() => {
+          const message = data ? "Actualizaste" : "Creaste";
+          toast.success(`¡${message} un socio con éxito!`, {
+            className: "notify-success",
+          });
+          reloadRecords();
+          returnForm
+            ? returnForm()
+            : reset(undefined, { keepDefaultValues: false });
+        })
+        .catch((error) => {
+          toast.error(error.message, { className: "notify-error" });
+        });
     },
   });
-  const onSubmit = (data: Inputs) => {
-    handleSubmitWithSubmit(data);
+  const {
+    handleSubmit: handleDelete,
+    error: deleteError,
+    isSubmitting: isDeleting,
+  } = useSubmitForm<void>({
+    onSubmit: async () => {
+      if (data) {
+        await deleteSocio(data?.id || "")
+          .then(() => {
+            toast.success("¡Eliminaste un socio con exito!", {
+              className: "notify-success",
+            });
+            reloadRecords();
+            returnForm
+              ? returnForm()
+              : reset(undefined, { keepDefaultValues: false });
+          })
+          .catch((error) => {
+            toast.error(error.message, { className: "notify-error" });
+          });
+      }
+    },
+  });
+  const onSubmit = (formData: Inputs) => {
+    handleSubmitWithSubmit(formData);
+  };
+
+  const handleCancel = () => {
+    console.log("Handle cancel");
+    reset(undefined, { keepDefaultValues: false });
+  };
+  const handleDeleteClick = () => {
+    const confirmProps = {
+      title: "¿Quieres eliminar este registro?",
+      text: "No podras revertir esta acción",
+      onConfirm: handleDelete,
+      beforeConfirmTitle: "¡Eliminado!",
+      beforeConfirmText: "El registro se ha eliminado",
+    };
+    ConfirmDialog(confirmProps);
   };
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="Formulario">
@@ -215,7 +295,6 @@ export function Form() {
             placeholder=""
             id="callePrincipal"
             {...register("callePrincipal")}
-            required={false}
           />
           <label htmlFor="callePrincipal">Calle principal</label>
           {errors.callePrincipal?.message && (
@@ -256,14 +335,30 @@ export function Form() {
           {errors.referencia?.message && <p>{errors.referencia.message}</p>}
         </div>
       </div>
-      {error && <p className="error-request">{error}</p>}
+
       <div className="buttons">
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submit" disabled={isSubmitting || isDeleting}>
           {" "}
           <TfiSaveAlt />
-          Guardar
+          {data ? "Actualizar" : "Guardar"}
         </button>
-        <button className="cancel">
+        {data ? (
+          <button
+            type="button"
+            disabled={isDeleting || isSubmitting}
+            onClick={handleDeleteClick}
+          >
+            Eliminar
+          </button>
+        ) : (
+          ""
+        )}
+        <button
+          className="cancel"
+          type="button"
+          onClick={returnForm || handleCancel}
+          disabled={isDeleting || isSubmitting}
+        >
           <MdOutlineCancelPresentation />
           Cancelar
         </button>

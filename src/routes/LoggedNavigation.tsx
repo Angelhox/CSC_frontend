@@ -14,9 +14,21 @@ import { ServiciosProvider } from "../context/servicios.context";
 import { UsuariosProvider } from "../context/usuarios.context";
 import { CargosProvider } from "../context/cargos.context";
 import { RolesProvider } from "../context/roles.context";
+import { Toaster } from "sonner";
+import { ContratosProvider } from "../context/contratos.context";
 export default function LoggedNavigation() {
   return (
     <BrowserRouter>
+      <Toaster
+        theme="dark"
+        // richColors
+        duration={3000}
+        dir="auto"
+        position="top-right"
+        offset="45px"
+        // closeButton
+        toastOptions={{ cancelButtonStyle: { color: "green" } }}
+      />
       <Routes>
         <Route
           path="/home"
@@ -54,7 +66,11 @@ export default function LoggedNavigation() {
           path="/contratos"
           element={
             <LoggedLayout>
-              <Contratos />
+              <SociosProvider>
+                <ContratosProvider>
+                  <Contratos />
+                </ContratosProvider>
+              </SociosProvider>
             </LoggedLayout>
           }
         />
@@ -74,7 +90,9 @@ export default function LoggedNavigation() {
           element={
             <LoggedLayout>
               <TaskContextProvider>
-                <Example />
+                <SociosProvider>
+                  <Example />
+                </SociosProvider>
               </TaskContextProvider>
             </LoggedLayout>
           }

@@ -1,5 +1,5 @@
 export interface dataSociosTable {
-  id: number;
+  id: number | string;
   primerNombre: string;
   segundoNombre: string;
   primerApellido: string;
@@ -19,6 +19,7 @@ export interface dataSociosTable {
   referencia: string;
 }
 export interface ISocio {
+  id?: string | number;
   primerNombre: string;
   segundoNombre?: string;
   primerApellido: string;

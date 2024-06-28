@@ -21,18 +21,19 @@ export const servicioSchema = z.object({
     }
     return val;
   }, z.number({ invalid_type_error: "Ingresa un valor válido" }).positive({ message: "Ingresa un valor válido" }).min(0.0, { message: "Ingresa un valor válido" }).multipleOf(0.01, { message: "Ingresa un valor con dos decimales" })),
-  aplazableSn: z.preprocess(
-    (val) => {
-      if (val) {
-        return "Si";
-      } else {
-        return "No";
-      }
-    },
+  aplazableSn:
+    //z.preprocess(
+    //   (val) => {
+    //     if (val) {
+    //       return "Si";
+    //     } else {
+    //       return "No";
+    //     }
+    //   },
     z.enum(estadoAplazable, {
       errorMap: () => ({ message: "Ingresa un estado aplazable válido" }),
-    })
-  ),
+    }),
+  //),
   fechaCreacion: z
     .string()
     .refine((dob) => new Date(dob).toString() !== "Invalid Date", {

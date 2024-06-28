@@ -11,7 +11,10 @@ import { HeaderForm } from "../../components/Shared/Headers/HeaderForm";
 import { Form } from "./Form";
 import { IMenuActions } from "../../commons/interfaces/menu-actions";
 import { ReportOptions } from "../../components/ReportOptions/ReportOptions";
-import { dataServiciosTable } from "../../Interfaces/Servicios/servicios.interface";
+import {
+  IServicios,
+  dataServiciosTable,
+} from "../../Interfaces/Servicios/servicios.interface";
 import { UseServiciosContext } from "../../context/servicios.context";
 
 export function Servicios() {
@@ -22,6 +25,7 @@ export function Servicios() {
   const [titleActions, setTitleActions] = useState<string>(
     "+ Agregar un nuevo servicio"
   );
+  const [selectedData, setSelectedData] = useState<IServicios | null>(null);
   const openForm = (): void => {
     setTypeActions("Form");
     setTitleActions("+ Agregar un nuevo servicio");
@@ -31,11 +35,27 @@ export function Servicios() {
     setTitleActions("Genera un reporte");
   };
   const renderActions = () => {
-    if (typeActions === "Report") {
-      // return <ReportOptions data={Object.keys(data[0])} />;
-      return <ReportOptions data={Object.keys(data[0])} />;
+    console.log("render actions...");
+    switch (typeActions) {
+      case "Report":
+        console.log("render actions...");
+
+        return <ReportOptions data={Object.keys(data[0])} />;
+      case "Edit":
+        console.log("render edit...");
+
+        return <Form data={selectedData} returnForm={openForm} />;
+      case "Form":
+        console.log("render form...");
+        return <Form data={null} />;
+      default:
+        return null;
     }
-    return <Form />;
+  };
+  const handleSelect = (data: IServicios) => {
+    setSelectedData(data);
+    setTypeActions("Edit");
+    setTitleActions("Editar servicio");
   };
   const menuActions: IMenuActions[] = [
     {
@@ -86,24 +106,17 @@ export function Servicios() {
               <label htmlFor="">Buscar</label>
             </div>
           </div>
-          <ServiceCard data={filteredServices} />
-        </section>
-        {/* <div className="search ">
-          <TfiSearch />
-          <div className="input-group type-google">
-            <input
-              type="text"
-              className=""
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              required
-              placeholder=""
-            />
-            <label htmlFor="">Buscar</label>
+          <div className="slider-cards">
+            {" "}
+            {filteredServices.map((filteredService) => (
+              <ServiceCard
+                data={filteredService}
+                key={filteredService.id}
+                selectData={handleSelect}
+              />
+            ))}
           </div>
-        </div> */}
-
-        {/* <ServiceCard data={data} /> */}
+        </section>
       </div>
       <div className="container-actions">
         <div className="actions">

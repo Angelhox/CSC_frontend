@@ -1,5 +1,5 @@
 export interface dataServiciosTable {
-  id: number;
+  id: number | string;
   nombre: string;
   descripcion: string;
   tipo: string;
@@ -12,10 +12,11 @@ export interface dataServiciosTable {
   valorPagos: number;
 }
 export interface IServicios {
+  id?: string | number;
   nombre: string;
   descripcion: string;
   tipo: string;
-  aplazableSn: string;
+  aplazableSn: string|boolean;
   valoresDistintosSn: string;
   individualSn: string;
   fechaCreacion: string;

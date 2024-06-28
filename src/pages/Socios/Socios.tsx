@@ -6,27 +6,23 @@ import data from "./MOCK_DATA.json";
 import { TbDatabaseHeart } from "react-icons/tb";
 import { IoPersonAddOutline } from "react-icons/io5";
 import { IMenuActions } from "../../commons/interfaces/menu-actions";
+import { TbEdit } from "react-icons/tb";
 import "./Socios.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ReportOptions } from "../../components/ReportOptions/ReportOptions";
-import { dataSociosTable } from "../../Interfaces/Socios/socios.interface";
-import { getSocios } from "../../api/Socios/socio.service";
-import useApi from "../../api/Socios/socio.api";
+import {
+  ISocio,
+  dataSociosTable,
+} from "../../Interfaces/Socios/socios.interface";
 import { UseSocios } from "../../context/socios.context";
-// import { ReportOptions } from "./ReportOptions";
-type Person = {
-  id: number;
-  name: string;
-  lastname: string;
-  email: string;
-  country: string;
-  dateofbirth: string;
-};
-
 const lisTitle = "Socios";
 export function Socios() {
+  const [selectedData, setSelectedData] = useState<ISocio | null>(null);
+  const [typeActions, setTypeActions] = useState<string>("Form");
+  const [titleActions, setTitleActions] = useState<string>(
+    "+ Agregar un nuevo socio"
+  );
   const { socios: socios, loading, error } = UseSocios();
-  const defaultData: dataSociosTable[] | null = socios;
   const columnHelper = createColumnHelper<dataSociosTable>();
   const columns = [
     columnHelper.accessor("id", {
@@ -61,11 +57,23 @@ export function Socios() {
       header: "Barrio",
       footer: (info) => info.column.id,
     }),
+    columnHelper.display({
+      header: "Actualizar",
+      cell: ({ row }) => (
+        <button
+          onClick={() => {
+            setSelectedData(row.original);
+            setTypeActions("Edit");
+            setTitleActions("Editar socio");
+          }}
+        >
+          <TbEdit/>
+        </button>
+      ),
+      footer:"Actualizar"
+    }),
   ];
-  const [typeActions, setTypeActions] = useState<string>("Form");
-  const [titleActions, setTitleActions] = useState<string>(
-    "+ Agregar un nuevo socio"
-  );
+
   const openForm = (): void => {
     setTypeActions("Form");
     setTitleActions("+ Agregar un nuevo socio");
@@ -88,13 +96,26 @@ export function Socios() {
       onClick: openForm,
     },
   ];
+
   const renderActions = () => {
-    if (typeActions === "Report") {
-      // return <ReportOptions data={Object.keys(data[0])} />;
-      return <ReportOptions data={Object.keys(data[0])} />;
+    console.log("render actions...");
+    switch (typeActions) {
+      case "Report":
+        console.log("render actions...");
+
+        return <ReportOptions data={Object.keys(data[0])} />;
+      case "Edit":
+        console.log("render edit...");
+
+        return <Form data={selectedData} returnForm={openForm} />;
+      case "Form":
+        console.log("render form...");
+        return <Form data={null} />;
+      default:
+        return null;
     }
-    return <Form />;
   };
+
   if (!socios) {
     return null;
   }
